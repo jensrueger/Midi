@@ -21,8 +21,8 @@ const privatePPQMap = new WeakMap()
 /** Represents the parsed midi file header */
 export class Header {
 	/**
-	 * 
-	 * @param {*} [midiData] 
+	 *
+	 * @param {*} [midiData]
 	 */
 	constructor(midiData){
 		//look through all the tracks for tempo changes
@@ -34,13 +34,13 @@ export class Header {
 
 		/** @type {TimeSignatureEvent[]} */
 		this.timeSignatures = []
-		
+
 		/** @type {string} */
 		this.name = ''
 
 		/** @type {Array} */
 		this.meta = []
-		
+
 		if (midiData){
 			privatePPQMap.set(this, midiData.header.ticksPerBeat)
 			//check the first track for all the relevant data
@@ -81,8 +81,9 @@ export class Header {
 		//make sure it's sorted
 		this.tempos.sort((a, b) => a.ticks - b.ticks)
 		this.tempos.forEach((event, index) => {
-			const lastBPM = index > 0 ? this.tempos[index - 1].bpm : this.tempos[0].bpm
-			const beats = (event.ticks / this.ppq) - lastEventBeats
+			const lastBPM =
+				index > 0 ? this.tempos[index - 1].bpm : this.tempos[0].bpm
+			const beats = event.ticks / this.ppq - lastEventBeats
 			const elapsedSeconds = (60 / lastBPM) * beats
 			event.time = elapsedSeconds + currentTime
 			currentTime = event.time
@@ -90,9 +91,13 @@ export class Header {
 		})
 		this.timeSignatures.sort((a, b) => a.ticks - b.ticks)
 		this.timeSignatures.forEach((event, index) => {
-			const lastEvent = index > 0 ? this.timeSignatures[index - 1] : this.timeSignatures[0]
+			const lastEvent =
+				index > 0 ? this.timeSignatures[index - 1] : this.timeSignatures[0]
 			const elapsedBeats = (event.ticks - lastEvent.ticks) / this.ppq
-			const elapsedMeasures = (elapsedBeats / lastEvent.timeSignature[0]) / (lastEvent.timeSignature[1] / 4)
+			const elapsedMeasures =
+				elapsedBeats /
+				lastEvent.timeSignature[0] /
+				(lastEvent.timeSignature[1] / 4)
 			lastEvent.measures = lastEvent.measures || 0
 			event.measures = elapsedMeasures + lastEvent.measures
 		})
@@ -112,7 +117,7 @@ export class Header {
 			return tempoTime + (60 / tempo.bpm) * elapsedBeats
 		} else {
 			//assume 120
-			const beats = (ticks / this.ppq)
+			const beats = ticks / this.ppq
 			return (60 / 120) * beats
 		}
 	}
@@ -126,15 +131,20 @@ export class Header {
 		if (index !== -1){
 			const timeSigEvent = this.timeSignatures[index]
 			const elapsedBeats = (ticks - timeSigEvent.ticks) / this.ppq
-			return timeSigEvent.measures + elapsedBeats / (timeSigEvent.timeSignature[0] / timeSigEvent.timeSignature[1]) / 4
+			return (
+				timeSigEvent.measures +
+				elapsedBeats /
+					(timeSigEvent.timeSignature[0] / timeSigEvent.timeSignature[1]) /
+					4
+			)
 		} else {
-			return (ticks / this.ppq) / 4
+			return ticks / this.ppq / 4
 		}
 	}
 
 	/**
-	 * The number of ticks per quarter note 
-	 * @type {number} 
+	 * The number of ticks per quarter note
+	 * @type {number}
 	 * @readonly
 	 */
 	get ppq(){
@@ -142,7 +152,7 @@ export class Header {
 	}
 
 	/**
-	 * @param {number} seconds 
+	 * @param {number} seconds
 	 * @returns {number}
 	 */
 	secondsToTicks(seconds){
@@ -151,7 +161,7 @@ export class Header {
 		if (index !== -1){
 			const tempo = this.tempos[index]
 			const tempoTime = tempo.time
-			const elapsedTime = (seconds - tempoTime)
+			const elapsedTime = seconds - tempoTime
 			const elapsedBeats = elapsedTime / (60 / tempo.bpm)
 			return Math.round(tempo.ticks + elapsedBeats * this.ppq)
 		} else {
@@ -175,7 +185,7 @@ export class Header {
 					bpm : t.bpm
 				}
 			}),
-			timeSignatures : this.timeSignatures,
+			timeSignatures : this.timeSignatures
 		}
 	}
 
